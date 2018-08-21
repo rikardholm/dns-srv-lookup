@@ -12,15 +12,19 @@ public class ServiceLookerUpper {
         env.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
         env.put("java.naming.provider.url", "dns://127.0.0.1:8600");
         InitialDirContext ctx;
-        String[] fields;
+        String firstSrvRevord;
         try {
             ctx = new InitialDirContext(env);
             Attributes attributes = ctx.getAttributes(serviceName + ".service.consul", new String[]{"SRV"});
-            fields = attributes.get("srv").get(0).toString().split(" ");
+            firstSrvRevord = attributes.get("srv").get(0).toString();
         } catch (NamingException e) {
             throw new ServiceLookupException(e);
         }
+        String[] fields = firstSrvRevord.split(" ");
 
-        return new InetSocketAddress(fields[3], Integer.parseInt(fields[2]));
+        int port = Integer.parseInt(fields[2]);
+        String hostname = fields[3];
+
+        return new InetSocketAddress(hostname, port);
     }
 }
